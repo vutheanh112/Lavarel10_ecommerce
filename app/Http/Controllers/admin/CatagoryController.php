@@ -76,13 +76,96 @@ class CatagoryController extends Controller
      }
     }
 
-    public function edit()
+    public function edit($categoryId, Request $request)
     {
+        $category = catagory::find($categoryId);
+        if(empty($category)){
+            return redirect()->route('catagories.index');
+        }
+        
+        return view('admin.catagory.edit',compact('category'));
     }
 
-    public function update()
+    public function update($categoryId, Request $request)
     {
+        $category = catagory::find($categoryId);
 
+        if (empty($category)) {
+            return response()-> json([
+                'status'=>false,
+                'notFound'=>true,
+                'message'=>'Category not found'
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), [
+            "name" => 'required',
+            "slug" => 'required|unique:catagories,slug,'. $category->id.',id',
+        ]);
+
+        if ($validator->passes()) {
+
+            $category->name = $request->name;
+            $category->slug = $request->slug;
+            $category->status = $request->status;
+            $category->save();
+
+            $oldImages = $category->image;
+
+            //save Images
+            if (!empty($request->image_id)) {
+                $tempImage = Tempimage::find($request->image_id);
+                $extArray = explode('.', $tempImage->name);
+                $ext = last($extArray);
+
+                $newImagesName = $category->id.'-'.time() . '.' . $ext;
+                $sPath = public_path() . '/temp/' . $tempImage->name;
+                $dPath = public_path() . '/uploads/category/' . $newImagesName;
+                File::copy($sPath, $dPath);
+                $category->images = $newImagesName;
+                $category->save();
+
+                //delete old images here
+                file::delete(public_path().'/uploads/catagory/'.$oldImages);
+
+            }
+
+            $request->session()->flash('success', 'Catagory updated successfull');
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Catagory add successfull'
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
+
+    }
+    public function destroy($categoryId, Request $request){
+        $category = catagory::find($categoryId);
+        if(empty($category)){
+            $request->session()->flash('error', 'Catagory  not found');
+            return response()->json([
+                'status' => true,
+                'message' => 'Catagory  not found'
+            ]);
+            //return redirect()->route('catagories.index');
+        }
+        //delete old images here
+        file::delete(public_path() . '/uploads/catagory/' . $category->image);
+
+        $category->delete();
+
+        $request->session()->flash('success', 'Catagory deleted successfull');
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Catagory  deleted successfull' 
+        ]);
+       
     }
     
 }
