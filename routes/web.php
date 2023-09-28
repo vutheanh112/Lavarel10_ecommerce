@@ -42,7 +42,9 @@ Route::group(['prefix' => 'admin'],function(){
         Route::delete('/catagories/{catagory}', [CatagoryController::class, 'destroy'])->name('catagories.delete');
 
         // sub catagory*/
+        Route::get('/sub-catagories', [SubCatagoryController::class, 'index'])->name('sub-catagories.index');
         Route::get('/sub-catagories/create', [SubCatagoryController::class, 'create'])->name('sub-catagories.create');
+        Route::post('/sub-catagories', [subCatagoryController::class, 'store'])->name('sub-catagories.store');
         //temp-images
 
         Route::post('/upload-temp-image', [TempImagesController::class, 'create'])->name('temp-images.create');

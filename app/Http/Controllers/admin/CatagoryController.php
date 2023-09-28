@@ -14,7 +14,7 @@ use function Laravel\Prompts\error;
 
 class CatagoryController extends Controller
 {
-    public function index(Request $request){
+public function index(Request $request){
     $catagories = catagory::latest();
     //search*/
     if(!empty($request ->get('keyword'))){
@@ -24,8 +24,7 @@ class CatagoryController extends Controller
      $catagories = $catagories->paginate(10);
      $data['catagories'] = $catagories;
      return view('admin.catagory.list',compact('catagories'));
-    }
-
+ }
     public function create()
     {
 
